@@ -202,7 +202,14 @@ func (h *CSRFHandler) setTokenCookie(w http.ResponseWriter, r *http.Request, tok
 	cookie.Value = b64encode(token)
 
 	http.SetCookie(w, &cookie)
-	// TODO-NIC For header key 'Set-Cookie' with value starting 'csrf_token=...' add "; SameSite=strict"
+
+	// Add SameSite=strict to the Cookie. Not required when supported in native golang library
+
+	cookieVals := w.Header()["Set-Cookie"]
+	if len(cookieVals) != 1 {
+		return
+	}
+	cookieVals[0] += "; SameSite=strict"
 }
 
 // Sets the handler to call in case the CSRF check
