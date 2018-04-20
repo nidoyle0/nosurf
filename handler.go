@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 const (
@@ -203,13 +204,15 @@ func (h *CSRFHandler) setTokenCookie(w http.ResponseWriter, r *http.Request, tok
 
 	http.SetCookie(w, &cookie)
 
-	// Add SameSite=strict to the Cookie. Not required when supported in native golang library
-
+	// Add SameSite=strict to the Cookie. Not required when this supported in native golang library
 	cookieVals := w.Header()["Set-Cookie"]
-	if len(cookieVals) != 1 {
-		return
+	for i, c := range cookieVals {
+		if strings.HasPrefix(c, CookieName) {
+			cookieVals[i] = c + "; SameSite=strict"
+			break
+		}
 	}
-	cookieVals[0] += "; SameSite=strict"
+
 }
 
 // Sets the handler to call in case the CSRF check
